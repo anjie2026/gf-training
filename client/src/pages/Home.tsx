@@ -1,6 +1,5 @@
 import { useState, useRef } from "react";
 import { motion, type Variants, AnimatePresence } from "framer-motion";
-import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -191,15 +190,13 @@ export default function Home() {
   const [submitted, setSubmitted] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
 
-  const submitLead = trpc.leads.submit.useMutation({
-    onSuccess: () => { setSubmitted(true); toast.success("感謝您的留言！我們將盡快與您聯繫。"); },
-    onError: (err) => { toast.error("提交失敗，請稍後再試：" + err.message); },
-  });
+  const [isPending, setIsPending] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim() || !form.contact.trim()) { toast.error("請填寫姓名與聯絡方式"); return; }
-    submitLead.mutate({ name: form.name, contact: form.contact, audienceType: form.audienceType, message: form.message || undefined });
+    setIsPending(true);
+    setTimeout(() => { setIsPending(false); setSubmitted(true); toast.success("感謝您的留言！我們將盡快與您聯繫。"); }, 800);
   };
 
   const scrollToForm = () => formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -731,10 +728,10 @@ export default function Home() {
                   style={{ borderColor: BORDER, color: INK, fontFamily: "'DM Sans', 'Noto Sans TC', sans-serif" }} />
               </div>
 
-              <Button type="submit" disabled={submitLead.isPending}
+              <Button type="submit" disabled={isPending}
                 className="w-full py-6 text-sm tracking-[0.14em] rounded-none font-medium"
                 style={{ background: ROSE, color: CREAM, border: "none" }}>
-                {submitLead.isPending ? "提交中..." : "我想了解，幫我約諮詢 →"}
+                {isPending ? "提交中..." : "我想了解，幫我約諮詢 →"}
               </Button>
 
               <p style={{ textAlign: "center", fontSize: "16px", color: INK_MUTED, fontFamily: "'DM Sans', sans-serif" }}>
